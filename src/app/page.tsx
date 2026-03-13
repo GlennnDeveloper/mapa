@@ -105,7 +105,13 @@ export default function Home() {
   
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* ... AddLocationModal and suggestions ... */}
+      {/* Add Location Modal */}
+      <AddLocationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => refresh()}
+        onProjectCreated={(lat, lng) => handleSearchNearby(lat, lng)}
+      />
 
       {/* Header - Compact on mobile */}
       <header className="px-5 py-4 md:px-8 md:py-6 bg-card border-b border-border shadow-sm sticky top-0 z-[1000] backdrop-blur-md bg-card/90">
