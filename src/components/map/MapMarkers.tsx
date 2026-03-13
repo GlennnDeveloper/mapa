@@ -121,47 +121,46 @@ const MemoizedMarker = memo(({
       }}
     >
       <Popup className="custom-popup">
-        <div className="flex flex-col w-[280px] sm:w-[300px] bg-white overflow-hidden rounded-2xl shadow-2xl border border-slate-100 mx-auto">
-          <div className="relative h-28 bg-slate-950 overflow-hidden">
-            <div className="absolute inset-0 opacity-30 pointer-events-none">
-              <div className="absolute top-0 left-0 w-40 h-40 bg-blue-600 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[50px]"></div>
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-orange-600 rounded-full translate-x-1/3 translate-y-1/3 blur-[40px]"></div>
+        <div className="flex flex-col w-[260px] sm:w-[300px] bg-white overflow-hidden rounded-3xl shadow-2xl border border-slate-100 mx-auto">
+          <div className="relative h-24 bg-slate-950 overflow-hidden">
+            <div className="absolute inset-0 opacity-40 pointer-events-none">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-blue-600 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[40px]"></div>
+              <div className="absolute bottom-0 right-0 w-24 h-24 bg-orange-600 rounded-full translate-x-1/3 translate-y-1/3 blur-[30px]"></div>
             </div>
 
-            <div className="relative z-10 p-6 flex flex-col justify-end h-full">
-              <div className="flex items-center justify-between mb-2">
+            <div className="relative z-10 p-5 flex flex-col justify-end h-full">
+              <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md border border-blue-500/30">
+                  <span className="text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md border border-blue-500/30">
                     {type === 'project' ? 'PROYECTO' : 'ALMACÉN'}
                   </span>
                 </div>
                 <button 
                   onClick={(e) => onDelete(location.id, e)}
                   disabled={isDeleting}
-                  className="p-2 bg-white/5 hover:bg-red-500/90 text-white rounded-xl transition-all active:scale-90 disabled:opacity-50 border border-white/5 hover:border-red-500/50"
+                  className="p-2 bg-white/10 hover:bg-red-500/90 text-white rounded-xl transition-all active:scale-90 disabled:opacity-50 border border-white/10 hover:border-red-500/50"
                   title="Eliminar"
                 >
-                   {isDeleting ? <Loader2 size={14} className="animate-spin text-white" /> : <Trash2 size={14} />}
+                   {isDeleting ? <Loader2 size={12} className="animate-spin text-white" /> : <Trash2 size={12} />}
                 </button>
               </div>
-              <h3 className="font-bold text-2xl text-white line-clamp-1 leading-none drop-shadow-sm text-left">{location.name}</h3>
+              <h3 className="font-black text-xl text-white line-clamp-1 leading-none drop-shadow-sm text-left tracking-tight">{location.name}</h3>
             </div>
           </div>
 
-          <div className="px-5 py-5 bg-white border-b border-slate-100">
+          <div className="px-4 py-4 bg-white border-b border-slate-100">
             {type === 'project' ? (
               <>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">
-                    ESTADO DEL PROYECTO
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">
+                    ESTADO
                   </span>
-                  <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black text-white shadow-lg shadow-black/5 ${currentStatus.color}`}>
-                    <span>{currentStatus.icon}</span>
+                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black text-white shadow-lg shadow-black/5 ${currentStatus.color}`}>
                     {currentStatus.label.toUpperCase()}
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {(['nuevo', 'proceso', 'terminado'] as LocationStatus[]).map((st) => {
                     const info = getStatusInfo(st);
                     const isCurrent = currentStatusStr.toLowerCase() === st || 
@@ -174,23 +173,23 @@ const MemoizedMarker = memo(({
                         disabled={isCurrent || isUpdating !== null}
                         onClick={(e) => onUpdateStatus(location.id, st, e)}
                         className={`
-                          relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all duration-300
+                          relative flex flex-col items-center gap-1 p-2 rounded-2xl border-2 transition-all duration-300
                           ${isCurrent 
-                            ? `border-${st === 'nuevo' ? 'blue' : st === 'proceso' ? 'orange' : 'emerald'}-500 bg-${st === 'nuevo' ? 'blue' : st === 'proceso' ? 'orange' : 'emerald'}-50/50 shadow-sm` 
+                            ? `border-${st === 'nuevo' ? 'blue' : st === 'proceso' ? 'orange' : 'emerald'}-500 bg-slate-50 shadow-sm` 
                             : 'border-slate-50 bg-slate-50/50 hover:bg-white hover:border-slate-200 text-slate-400 group'}
                           ${loading ? 'ring-2 ring-slate-200' : ''}
                         `}
                       >
-                        <span className={`text-lg transition-transform duration-300 ${isCurrent ? 'scale-110' : 'grayscale opacity-40 group-hover:opacity-60 group-hover:grayscale-0'}`}>
+                        <span className={`text-base transition-transform duration-300 ${isCurrent ? 'scale-110' : 'grayscale opacity-40 group-hover:opacity-60 group-hover:grayscale-0'}`}>
                           {info.icon}
                         </span>
-                        <span className={`text-[10px] font-black uppercase tracking-tight ${isCurrent ? 'text-slate-900' : 'text-slate-400'}`}>
-                          {st === 'terminado' ? 'Listo' : st === 'proceso' ? 'En Proceso' : 'Nuevo'}
+                        <span className={`text-[8px] font-black uppercase tracking-tighter ${isCurrent ? 'text-slate-900' : 'text-slate-400'}`}>
+                          {st === 'terminado' ? 'Listo' : st === 'proceso' ? 'Proceso' : 'Nuevo'}
                         </span>
                         
                         {loading && (
                           <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-[1px] rounded-[14px] z-20">
-                            <Loader2 size={16} className="animate-spin text-slate-900" />
+                            <Loader2 size={14} className="animate-spin text-slate-900" />
                           </div>
                         )}
                       </button>
@@ -199,70 +198,56 @@ const MemoizedMarker = memo(({
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-2">
-                 <div className="p-3 bg-orange-50 rounded-2xl mb-3">
-                   <Warehouse className="text-orange-600" size={24} />
+              <div className="flex flex-col items-center justify-center py-1">
+                 <div className="p-2 bg-orange-50 rounded-xl mb-2">
+                   <Warehouse className="text-orange-600" size={20} />
                  </div>
-                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">ALMACÉN DE LOGÍSTICA</span>
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">ALMACÉN LOGÍSTICA</span>
               </div>
             )}
           </div>
 
           <div className="p-5 space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
-                  <MapPin size={16} />
-                </div>
-                <p className="text-sm font-medium text-slate-600 leading-snug">
-                  {location.address}
-                </p>
+          <div className="p-4 space-y-4">
+            <div className="flex items-start gap-3 px-1">
+              <div className="p-2 bg-slate-50 rounded-xl text-slate-400 shrink-0">
+                <MapPin size={14} />
               </div>
-
-              {location.description && (
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 italic">
-                  <p className="text-xs text-slate-500 leading-relaxed text-center">
-                    "{location.description}"
-                  </p>
-                </div>
-              )}
+              <p className="text-[10px] font-bold text-slate-600 leading-relaxed">
+                {location.address}
+              </p>
             </div>
 
             <div className="pt-2">
-              <div className="flex items-center gap-2 mb-3">
-                <Navigation size={12} className="text-blue-500" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  ABRIR EN GPS
-                </span>
-              </div>
-              
               <div className="flex gap-2">
                 <a 
                   href={directionsUrl.google} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex-1 py-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all shadow-sm active:scale-95 flex flex-col items-center justify-center"
+                  className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl transition-all shadow-lg shadow-black/10 active:scale-95 flex items-center justify-center gap-1.5"
                 >
-                  <span className="text-[10px] font-black text-slate-900 uppercase">Google</span>
+                  <Navigation size={10} className="text-blue-400" />
+                  <span className="text-[9px] font-black uppercase tracking-tighter">Google</span>
                 </a>
                 <a 
                   href={directionsUrl.apple} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex-1 py-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all shadow-sm active:scale-95 flex flex-col items-center justify-center"
+                  className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center"
                 >
-                  <span className="text-[10px] font-black text-slate-900 uppercase">Apple</span>
+                  <span className="text-[9px] font-black uppercase tracking-tighter">Apple</span>
                 </a>
                 <a 
                   href={directionsUrl.waze} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex-1 py-3 bg-[#f3f6f9] hover:bg-[#eceff3] border border-transparent rounded-xl transition-all shadow-sm active:scale-95 flex flex-col items-center justify-center"
+                  className="flex-1 py-2.5 bg-[#f3f6f9] border border-transparent text-[#33a6cc] rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center"
                 >
-                  <span className="text-[10px] font-black text-[#33a6cc] uppercase">Waze</span>
+                  <span className="text-[9px] font-black uppercase tracking-tighter text-[#33a6cc]">Waze</span>
                 </a>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </Popup>

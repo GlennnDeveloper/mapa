@@ -131,16 +131,24 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Nuevo Punto Logístico</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-            <X size={20} className="text-slate-500" />
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 duration-500 flex flex-col max-h-[92vh]">
+        {/* Handle for mobile */}
+        <div className="sm:hidden flex justify-center pt-4 pb-2">
+            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+        </div>
+        
+        <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Nuevo Punto</h2>
+          <button 
+            onClick={onClose} 
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors group"
+          >
+            <X size={20} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm rounded-xl">
               {error}
@@ -221,11 +229,11 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
           {formData.type === 'project' && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
               <label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Nombre del Proyecto</label>
-              <input
+            <input
                 id="name"
                 required={formData.type === 'project'}
                 placeholder="Ej: Mudanza Familia Smith"
-                className="w-full p-4 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-900 dark:text-white"
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-bold text-slate-900 dark:text-white shadow-sm"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
@@ -241,7 +249,7 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
                 required
                 autoComplete="off"
                 placeholder="Busca una dirección..."
-                className="w-full p-4 pl-12 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-medium text-sm"
+                className="w-full p-4 pl-12 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-bold text-sm shadow-sm"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value, lat: null, lng: null })}
               />
@@ -276,7 +284,7 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
               id="desc"
               rows={2}
               placeholder="Detalles adicionales..."
-              className="w-full p-4 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-medium text-sm"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-bold text-sm shadow-sm"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
