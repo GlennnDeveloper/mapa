@@ -2,7 +2,7 @@
 
 import { useLocations } from '@/hooks/useLocations';
 import MapLoader from '@/components/map/MapLoader';
-import { LayoutGrid, Map as MapIcon, RefreshCw, Plus, X } from 'lucide-react';
+import { LayoutGrid, Map as MapIcon, RefreshCw, Plus, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import AddLocationModal from '@/components/ui/AddLocationModal';
 
@@ -20,6 +20,8 @@ export default function Home() {
   const [filterType, setFilterType] = useState<'all' | 'project' | 'storage'>('all');
   const [suggestions, setSuggestions] = useState<Partial<Location>[]>([]);
   const [isSearchingNearby, setIsSearchingNearby] = useState(false);
+  const [isProjectsExpanded, setIsProjectsExpanded] = useState(true);
+  const [isStoragesExpanded, setIsStoragesExpanded] = useState(true);
 
   const filteredLocations = locations.filter(loc => {
     const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -258,11 +260,19 @@ export default function Home() {
                   {/* Projects Section */}
                   {(filterType === 'all' || filterType === 'project') && (
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-3 pl-1">
-                           <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
-                           <span className="text-[10px] font-black uppercase tracking-widest">PROYECTOS</span>
-                      </div>
+                      <button 
+                        onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}
+                        className="w-full flex items-center justify-between text-blue-600 dark:text-blue-400 mb-3 pl-1 group/header"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                          <span className="text-[10px] font-black uppercase tracking-widest">PROYECTOS</span>
+                        </div>
+                        {isProjectsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
                       
+                      {isProjectsExpanded && (
+                        <>
                       {filteredLocations.filter(l => l.type === 'project').length === 0 ? (
                         <p className="text-[10px] text-slate-300 font-bold uppercase pl-1">No hay proyectos</p>
                       ) : (
@@ -293,17 +303,27 @@ export default function Home() {
                           </div>
                         ))
                       )}
+                        </>
+                      )}
                     </div>
                   )}
 
                   {/* Storage Section */}
                   {(filterType === 'all' || filterType === 'storage') && (
                     <div className={`space-y-2 ${filterType === 'all' ? 'mt-8' : ''}`}>
-                       <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 mb-3 pl-1">
+                       <button 
+                        onClick={() => setIsStoragesExpanded(!isStoragesExpanded)}
+                        className="w-full flex items-center justify-between text-violet-600 dark:text-violet-400 mb-3 pl-1 group/header"
+                       >
+                         <div className="flex items-center gap-2">
                            <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
                            <span className="text-[10px] font-black uppercase tracking-widest">ALMACENES</span>
-                      </div>
+                         </div>
+                         {isStoragesExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
 
+                      {isStoragesExpanded && (
+                        <>
                       {filteredLocations.filter(l => l.type === 'storage').length === 0 ? (
                         <p className="text-[10px] text-slate-300 font-bold uppercase pl-1">No hay almacenes</p>
                       ) : (
@@ -333,6 +353,8 @@ export default function Home() {
                             </div>
                           </div>
                         ))
+                      )}
+                        </>
                       )}
                     </div>
                   )}
