@@ -75,7 +75,6 @@ export const locationService = {
           `https://nominatim.openstreetmap.org/search?${queryString}`,
           {
             headers: {
-              'User-Agent': 'LogisticaMudanzaApp/2.0',
               'Accept-Language': 'en-US,en;q=0.5'
             }
           }
@@ -171,11 +170,10 @@ export const locationService = {
       const viewbox = '-85.6,35.0,-80.84,30.35';
       
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=us&viewbox=${viewbox}&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=5&countrycodes=us&viewbox=${viewbox}&addressdetails=1&email=adriaanvzzn@gmail.com`,
         {
           signal: suggestionsAbortController.signal,
           headers: {
-            'User-Agent': 'LogisticaMudanzaApp/1.0',
             'Accept-Language': 'en-US,en;q=0.5'
           }
         }
