@@ -16,6 +16,7 @@ export function useLocations() {
     locations: data || [], 
     loading: isLoading, 
     error: error instanceof Error ? error : error ? new Error('Failed to fetch locations') : null, 
-    refresh: () => mutate() 
+    refresh: () => mutate(),
+    mutate
   };
 }

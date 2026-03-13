@@ -9,12 +9,14 @@ import AddLocationModal from '@/components/ui/AddLocationModal';
 import { locationService } from '@/services/locationService';
 import BottomNav from '@/components/ui/BottomNav';
 import { Search, Filter, Trash2, MapPin } from 'lucide-react';
-import { Location } from '@/types/location';
+import { Location, LocationStatus } from '@/types/location';
+import BottomSheet from '@/components/ui/BottomSheet';
+import { useMemo } from 'react';
 
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function Home() {
-  const { locations, loading, error, refresh } = useLocations();
+  const { locations, loading, error, refresh, mutate } = useLocations();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const [activeMobileView, setActiveMobileView] = useState<'map' | 'list'>('map');
@@ -24,6 +26,15 @@ export default function Home() {
   const [isSearchingNearby, setIsSearchingNearby] = useState(false);
   const [isProjectsExpanded, setIsProjectsExpanded] = useState(true);
   const [isStoragesExpanded, setIsStoragesExpanded] = useState(true);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const [isUpdatingId, setIsUpdatingId] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const selectedLocation = useMemo(() => 
+    locations.find(l => l.id === selectedLocationId) || 
+    suggestions.find(s => s.id === selectedLocationId) as Location || 
+    null
+  , [selectedLocationId, locations, suggestions]);
 
   const filteredLocations = locations.filter(loc => {
     const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -34,15 +45,38 @@ export default function Home() {
 
   const handleSearchNearby = async (lat: number, lng: number) => {
     setIsSearchingNearby(true);
+    setSearchError(null);
     try {
       const results = await locationService.searchNearbyStorages(lat, lng);
-      setSuggestions(results);
-      if (results.length === 0) {
-        alert('No se encontraron storages en un radio de 5 millas.');
+      
+      // Filter out locations that already exist in our database
+      const filteredResults = results.filter(suggestion => {
+        const isDuplicate = locations.some(loc => {
+          const sameCoords = Math.abs(loc.lat - (suggestion.lat || 0)) < 0.0001 && 
+                            Math.abs(loc.lng - (suggestion.lng || 0)) < 0.0001;
+          const sameName = loc.name.toLowerCase() === suggestion.name?.toLowerCase();
+          return sameCoords || sameName;
+        });
+        return !isDuplicate;
+      });
+
+      setSuggestions(filteredResults);
+
+      if (filteredResults.length === 0) {
+        if (results.length > 0) {
+          setSearchError('Ya tienes todos estos almacenes registrados');
+        } else {
+          setSearchError('No se encontraron almacenes cercanos');
+        }
+        setTimeout(() => setSearchError(null), 4000);
+      } else {
+        // Auto-close Bottom Sheet when results are found
+        setSelectedLocationId(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error searching nearby:', error);
-      alert('Error al buscar storages cercanos.');
+      setSearchError(error.message || 'Error al buscar almacenes');
+      setTimeout(() => setSearchError(null), 4000);
     } finally {
       setIsSearchingNearby(false);
     }
@@ -383,10 +417,63 @@ export default function Home() {
               onSearchNearby={handleSearchNearby}
               isSearchingNearby={isSearchingNearby}
               onAddSuggestion={handleAddStorageFromSuggestion}
+              onLocationSelect={(id) => setSelectedLocationId(id)}
             />
           )}
         </section>
       </div>
+
+      {/* Bottom Sheet for Location Details */}
+      <BottomSheet 
+        location={selectedLocation}
+        isOpen={!!selectedLocationId}
+        onClose={() => setSelectedLocationId(null)}
+        onDelete={async (id) => {
+          if (!window.confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) return;
+          setIsDeletingId(id);
+          try {
+            await locationService.deleteLocation(id);
+            refresh();
+            setSelectedLocationId(null);
+          } catch (e) {
+            console.error(e);
+          } finally {
+            setIsDeletingId(null);
+          }
+        }}
+        onUpdateStatus={async (id, status) => {
+          setIsUpdatingId(status);
+          
+          const currentLocations = [...locations];
+          const optimisticData = locations.map(loc => 
+            loc.id === id ? { ...loc, status } : loc
+          );
+
+          try {
+            // 1. Update cache immediately without revalidation
+            await mutate(optimisticData, false);
+            
+            // 2. Perform server update
+            await locationService.updateLocationStatus(id, status);
+            
+            // 3. Trigger a full revalidation to ensure cache is synced with DB
+            await mutate();
+          } catch (e) {
+            console.error('Update failed:', e);
+            // Rollback local cache
+            await mutate(currentLocations, false);
+            alert('Error al actualizar el estado');
+          } finally {
+            setIsUpdatingId(null);
+          }
+        }}
+        onSearchNearby={handleSearchNearby}
+        isSearchingNearby={isSearchingNearby}
+        onAddSuggestion={handleAddStorageFromSuggestion}
+        isDeleting={!!isDeletingId}
+        isUpdating={isUpdatingId}
+        searchError={searchError}
+      />
 
       {/* Mobile Navigation */}
       <BottomNav 

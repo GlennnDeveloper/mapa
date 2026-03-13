@@ -26,6 +26,7 @@ interface MapLoaderProps {
   onSearchNearby?: (lat: number, lng: number) => void;
   isSearchingNearby?: boolean;
   onAddSuggestion?: (suggestion: Partial<Location>) => void;
+  onLocationSelect?: (id: string) => void;
 }
 
 export default function MapLoader({ 
@@ -35,7 +36,8 @@ export default function MapLoader({
   selectedLocationId,
   onSearchNearby,
   isSearchingNearby,
-  onAddSuggestion
+  onAddSuggestion,
+  onLocationSelect
 }: MapLoaderProps) {
   return (
     <MapComponent 
@@ -46,6 +48,7 @@ export default function MapLoader({
       onSearchNearby={onSearchNearby}
       isSearchingNearby={isSearchingNearby}
       onAddSuggestion={onAddSuggestion}
+      onLocationSelect={onLocationSelect}
     />
   );
 }
