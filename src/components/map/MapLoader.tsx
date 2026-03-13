@@ -20,16 +20,32 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
 
 interface MapLoaderProps {
   locations: Location[];
+  suggestions?: Partial<Location>[];
   onDeleteSuccess?: () => void;
   selectedLocationId?: string | null;
+  onSearchNearby?: (lat: number, lng: number) => void;
+  isSearchingNearby?: boolean;
+  onAddSuggestion?: (suggestion: Partial<Location>) => void;
 }
 
-export default function MapLoader({ locations, onDeleteSuccess, selectedLocationId }: MapLoaderProps) {
+export default function MapLoader({ 
+  locations, 
+  suggestions, 
+  onDeleteSuccess, 
+  selectedLocationId,
+  onSearchNearby,
+  isSearchingNearby,
+  onAddSuggestion
+}: MapLoaderProps) {
   return (
     <MapComponent 
       locations={locations} 
+      suggestions={suggestions}
       onDeleteSuccess={onDeleteSuccess} 
       selectedLocationId={selectedLocationId}
+      onSearchNearby={onSearchNearby}
+      isSearchingNearby={isSearchingNearby}
+      onAddSuggestion={onAddSuggestion}
     />
   );
 }

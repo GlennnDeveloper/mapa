@@ -3,19 +3,23 @@
 import { Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
-import { Location, LocationStatus } from '@/types/location';
-import { MapPin, Navigation, Trash2, Loader2, Warehouse } from 'lucide-react';
+import { type Location, type LocationStatus } from '@/types/location';
+import { MapPin, Navigation, Trash2, Loader2, Warehouse, Search, Plus } from 'lucide-react';
 import { locationService } from '@/services/locationService';
 
 interface MapMarkersProps {
   locations: Location[];
-  type: 'project' | 'storage';
+  type: 'project' | 'storage' | 'suggestion';
   selectedLocationId?: string | null;
   onDeleteSuccess?: () => void;
+  onSearchNearby?: (lat: number, lng: number) => void;
+  isSearchingNearby?: boolean;
+  onAddSuggestion?: (suggestion: Partial<Location>) => void;
 }
 
-const getStatusColorHex = (status: string, type: 'project' | 'storage') => {
+const getStatusColorHex = (status: string, type: 'project' | 'storage' | 'suggestion') => {
   if (type === 'storage') return '#7c3aed'; // violet-600
+  if (type === 'suggestion') return '#8b5cf6'; // violet-500
   
   const s = status.toLowerCase();
   if (s === 'nuevo' || s === 'active') return '#2563eb'; // blue-600
@@ -25,11 +29,12 @@ const getStatusColorHex = (status: string, type: 'project' | 'storage') => {
 };
 
 // Optimized icon creation using CSS variables and classes
-const createCustomIcon = (type: 'project' | 'storage', status: string, labelText: string, isPopupOpen: boolean) => {
+const createCustomIcon = (type: 'project' | 'storage' | 'suggestion', status: string, labelText: string, isPopupOpen: boolean) => {
   const color = getStatusColorHex(status, type);
   const housePaths = `<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />`;
   const warehousePaths = `<path d="M3 21V8l9-4 9 4v13" /><path d="M13 13h4" /><path d="M13 17h4" /><path d="M13 9h4" /><path d="M21 21H3" /><path d="M9 11v10" />`;
-  const innerIconPaths = type === 'project' ? housePaths : warehousePaths;
+  const plusPaths = `<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>`;
+  const innerIconPaths = type === 'project' ? housePaths : type === 'suggestion' ? plusPaths : warehousePaths;
 
   return L.divIcon({
     html: `
@@ -76,25 +81,31 @@ const MemoizedMarker = memo(({
   isDeleting,
   isUpdating,
   optimisticStatus,
-  setMarkerRef
+  setMarkerRef,
+  onSearchNearby,
+  isSearchingNearby,
+  onAddSuggestion
 }: { 
   location: Location; 
-  type: 'project' | 'storage';
+  type: 'project' | 'storage' | 'suggestion';
   onDelete: (id: string, e: React.MouseEvent) => void;
   onUpdateStatus: (id: string, status: LocationStatus, e: React.MouseEvent) => void;
   isDeleting: boolean;
   isUpdating: string | null;
   optimisticStatus?: LocationStatus;
   setMarkerRef: (el: L.Marker | null) => void;
+  onSearchNearby?: (lat: number, lng: number) => void;
+  isSearchingNearby?: boolean;
+  onAddSuggestion?: (suggestion: Partial<Location>) => void;
 }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const currentStatusStr = optimisticStatus || location.status;
   const currentStatus = getStatusInfo(currentStatusStr);
   
   // Icon only depends on type, status, and name. NOT isPopupOpen.
-  // This prevents Leaflet from re-rendering the marker when the popup opens.
   const icon = useMemo(() => {
-    const labelText = type === 'storage' ? 'STORAGE' : location.name;
+    let labelText = type === 'storage' ? 'STORAGE' : location.name;
+    if (type === 'suggestion') labelText = 'SUGERENCIA';
     return createCustomIcon(type, currentStatusStr, labelText, false);
   }, [type, currentStatusStr, location.name]);
 
@@ -132,17 +143,19 @@ const MemoizedMarker = memo(({
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md border border-blue-500/30">
-                    {type === 'project' ? 'PROYECTO' : 'ALMACÉN'}
+                    {type === 'project' ? 'PROYECTO' : type === 'suggestion' ? 'SUGERENCIA' : 'ALMACÉN'}
                   </span>
                 </div>
-                <button 
-                  onClick={(e) => onDelete(location.id, e)}
-                  disabled={isDeleting}
-                  className="p-2 bg-white/10 hover:bg-red-500/90 text-white rounded-xl transition-all active:scale-90 disabled:opacity-50 border border-white/10 hover:border-red-500/50"
-                  title="Eliminar"
-                >
-                   {isDeleting ? <Loader2 size={12} className="animate-spin text-white" /> : <Trash2 size={12} />}
-                </button>
+                {type !== 'suggestion' && (
+                  <button 
+                    onClick={(e) => onDelete(location.id, e)}
+                    disabled={isDeleting}
+                    className="p-2 bg-white/10 hover:bg-red-500/90 text-white rounded-xl transition-all active:scale-90 disabled:opacity-50 border border-white/10 hover:border-red-500/50"
+                    title="Eliminar"
+                  >
+                    {isDeleting ? <Loader2 size={12} className="animate-spin text-white" /> : <Trash2 size={12} />}
+                  </button>
+                )}
               </div>
               <h3 className="font-black text-xl text-white line-clamp-1 leading-none drop-shadow-sm text-left tracking-tight">{location.name}</h3>
             </div>
@@ -198,17 +211,55 @@ const MemoizedMarker = memo(({
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-1">
-                 <div className="p-2 bg-orange-50 rounded-xl mb-2">
-                   <Warehouse className="text-orange-600" size={20} />
-                 </div>
-                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">ALMACÉN LOGÍSTICA</span>
-              </div>
+              <>
+                <div className="flex flex-col items-center justify-center py-1">
+                   <div className="p-2 bg-orange-50 rounded-xl mb-2">
+                     <Warehouse className="text-orange-600" size={20} />
+                   </div>
+                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    {type === 'suggestion' ? 'SUGERENCIA OSM' : 'ALMACÉN LOGÍSTICA'}
+                   </span>
+                </div>
+                {type === 'suggestion' && onAddSuggestion && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddSuggestion(location);
+                    }}
+                    className="w-full mt-4 py-3 bg-violet-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-violet-500/20 hover:bg-violet-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <Plus size={14} />
+                    Agregar a mis Storages
+                  </button>
+                )}
+              </>
             )}
           </div>
 
-          <div className="p-5 space-y-4">
-          <div className="p-4 space-y-4">
+          <div className="px-5 py-4 space-y-4">
+            {type === 'project' && onSearchNearby && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSearchNearby(location.lat, location.lng);
+                }}
+                disabled={isSearchingNearby}
+                className={`
+                  w-full py-3 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 mb-4
+                  ${isSearchingNearby 
+                    ? 'bg-slate-100 text-slate-400' 
+                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 shadow-sm'}
+                `}
+              >
+                {isSearchingNearby ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Search size={14} />
+                )}
+                {isSearchingNearby ? 'Buscando...' : 'Buscar Storages Cercanos'}
+              </button>
+            )}
+
             <div className="flex items-start gap-3 px-1">
               <div className="p-2 bg-slate-50 rounded-xl text-slate-400 shrink-0">
                 <MapPin size={14} />
@@ -248,7 +299,6 @@ const MemoizedMarker = memo(({
               </div>
             </div>
           </div>
-          </div>
         </div>
       </Popup>
     </Marker>
@@ -261,7 +311,10 @@ export default function MapMarkers({
   locations, 
   type, 
   onDeleteSuccess,
-  selectedLocationId 
+  selectedLocationId,
+  onSearchNearby,
+  isSearchingNearby,
+  onAddSuggestion
 }: MapMarkersProps) {
   const map = useMap();
   const markerRefs = useRef<Record<string, L.Marker>>({});
@@ -335,6 +388,9 @@ export default function MapMarkers({
           setMarkerRef={(el) => {
             if (el) markerRefs.current[location.id] = el;
           }}
+          onSearchNearby={onSearchNearby}
+          isSearchingNearby={isSearchingNearby}
+          onAddSuggestion={onAddSuggestion}
         />
       ))}
     </>

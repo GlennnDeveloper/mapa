@@ -8,14 +8,26 @@ import MapGPSButton from './MapGPSButton';
 
 interface MapComponentProps {
   locations: Location[];
+  suggestions?: Partial<Location>[];
   onDeleteSuccess?: () => void;
   selectedLocationId?: string | null;
+  onSearchNearby?: (lat: number, lng: number) => void;
+  isSearchingNearby?: boolean;
+  onAddSuggestion?: (suggestion: Partial<Location>) => void;
 }
 
 const GEORGIA_CENTER: [number, number] = [33.98, -84.1];
 const INITIAL_ZOOM = 9;
 
-export default function MapComponent({ locations, onDeleteSuccess, selectedLocationId }: MapComponentProps) {
+export default function MapComponent({ 
+  locations, 
+  suggestions = [], 
+  onDeleteSuccess, 
+  selectedLocationId,
+  onSearchNearby,
+  isSearchingNearby,
+  onAddSuggestion
+}: MapComponentProps) {
   return (
     <div className="h-full w-full rounded-xl overflow-hidden shadow-2xl border border-white/10">
       <MapContainer
@@ -44,6 +56,8 @@ export default function MapComponent({ locations, onDeleteSuccess, selectedLocat
                 type="project" 
                 onDeleteSuccess={onDeleteSuccess}
                 selectedLocationId={selectedLocationId}
+                onSearchNearby={onSearchNearby}
+                isSearchingNearby={isSearchingNearby}
               />
             </LayerGroup>
           </LayersControl.Overlay>
@@ -55,6 +69,16 @@ export default function MapComponent({ locations, onDeleteSuccess, selectedLocat
                 type="storage" 
                 onDeleteSuccess={onDeleteSuccess}
                 selectedLocationId={selectedLocationId}
+              />
+            </LayerGroup>
+          </LayersControl.Overlay>
+
+          <LayersControl.Overlay checked name="Sugerencias Cercanas">
+            <LayerGroup>
+              <MapMarkers 
+                locations={suggestions as Location[]} 
+                type="suggestion" 
+                onAddSuggestion={onAddSuggestion}
               />
             </LayerGroup>
           </LayersControl.Overlay>

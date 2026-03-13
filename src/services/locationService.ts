@@ -232,5 +232,97 @@ export const locationService = {
       console.error('Error updating status:', error);
       throw error;
     }
+  },
+
+  async searchNearbyStorages(lat: number, lng: number): Promise<Partial<Location>[]> {
+    // 5 miles in meters is strictly 8046.72
+    const radius = 8046;
+    
+    const query = `
+      [out:json][timeout:25];
+      (
+        node["shop"="storage_rental"](around:${radius},${lat},${lng});
+        way["shop"="storage_rental"](around:${radius},${lat},${lng});
+        node["amenity"="storage_rental"](around:${radius},${lat},${lng});
+        way["amenity"="storage_rental"](around:${radius},${lat},${lng});
+        node["service"="self_storage"](around:${radius},${lat},${lng});
+        way["service"="self_storage"](around:${radius},${lat},${lng});
+      );
+      out center;
+    `;
+
+    try {
+      const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      if (!response.ok) throw new Error('Failed to fetch from Overpass API');
+      const data = await response.json();
+      
+      const rawElements = data.elements || [];
+      const suggestions: Partial<Location>[] = [];
+
+      // Deduplication logic: Keep only one marker per facility (within ~300m radius)
+      const MIN_DISTANCE_METERS = 300;
+      
+      const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371e3; // metres
+        const φ1 = lat1 * Math.PI/180;
+        const φ2 = lat2 * Math.PI/180;
+        const Δφ = (lat2-lat1) * Math.PI/180;
+        const Δλ = (lon2-lon1) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c; // in metres
+      };
+
+      for (const element of rawElements) {
+        const eLat = element.lat || (element.center && element.center.lat);
+        const eLng = element.lon || (element.center && element.center.lon);
+        
+        if (!eLat || !eLng) continue;
+
+        // Strict radius check: (In case Overpass center vs around is slightly off or for ways)
+        const distanceToCenter = getDistance(lat, lng, eLat, eLng);
+        if (distanceToCenter > radius) continue;
+
+        // Check if we already have a suggestion nearby (Deduplication)
+        const isDuplicate = suggestions.some(s => 
+          getDistance(eLat, eLng, s.lat!, s.lng!) < MIN_DISTANCE_METERS
+        );
+
+        if (!isDuplicate) {
+          const tags = element.tags || {};
+          const name = tags.name || tags.brand || tags.operator || 'Storage Facility';
+          
+          const street = tags['addr:street'] || '';
+          const houseNumber = tags['addr:housenumber'] || '';
+          const city = tags['addr:city'] || '';
+          const postcode = tags['addr:postcode'] || '';
+          
+          let address = '';
+          if (houseNumber || street) address = `${houseNumber} ${street}`.trim();
+          if (city) address += (address ? `, ${city}` : city);
+          if (postcode) address += (address ? ` ${postcode}` : postcode);
+          if (!address) address = 'Logística cercana';
+
+          suggestions.push({
+            id: `suggestion-${element.id}`,
+            name: name,
+            address: address,
+            lat: eLat,
+            lng: eLng,
+            type: 'storage' as const,
+            status: 'nuevo' as const
+          });
+        }
+      }
+
+      return suggestions;
+    } catch (error) {
+      console.error('Error searching nearby storages:', error);
+      return [];
+    }
   }
 };

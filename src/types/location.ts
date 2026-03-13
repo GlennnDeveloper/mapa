@@ -1,4 +1,4 @@
-export type LocationType = 'project' | 'storage';
+export type LocationType = 'project' | 'storage' | 'suggestion';
 export type LocationStatus = 'nuevo' | 'proceso' | 'terminado';
 
 export interface Location {

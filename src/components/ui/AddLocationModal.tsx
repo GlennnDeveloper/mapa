@@ -9,6 +9,7 @@ interface AddLocationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onProjectCreated?: (lat: number, lng: number) => void;
 }
 
 interface Suggestion {
@@ -17,7 +18,7 @@ interface Suggestion {
   lon: string;
 }
 
-export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLocationModalProps) {
+export default function AddLocationModal({ isOpen, onClose, onSuccess, onProjectCreated }: AddLocationModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -113,6 +114,12 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
       });
 
       onSuccess();
+      
+      // If it was a project, trigger the nearby search
+      if (formData.type === 'project' && onProjectCreated && finalLat && finalLng) {
+        onProjectCreated(finalLat, finalLng);
+      }
+      
       onClose();
       // Reset form
       setFormData({ name: '', address: '', type: 'project', status: 'nuevo', description: '', lat: null, lng: null });

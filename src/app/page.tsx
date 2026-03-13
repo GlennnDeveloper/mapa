@@ -6,8 +6,10 @@ import { LayoutGrid, Map as MapIcon, RefreshCw, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import AddLocationModal from '@/components/ui/AddLocationModal';
 
+import { locationService } from '@/services/locationService';
 import BottomNav from '@/components/ui/BottomNav';
-import { Search, Filter, Trash2 } from 'lucide-react';
+import { Search, Filter, Trash2, MapPin } from 'lucide-react';
+import { Location } from '@/types/location';
 
 export default function Home() {
   const { locations, loading, error, refresh } = useLocations();
@@ -16,6 +18,8 @@ export default function Home() {
   const [activeMobileView, setActiveMobileView] = useState<'map' | 'list'>('map');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'project' | 'storage'>('all');
+  const [suggestions, setSuggestions] = useState<Partial<Location>[]>([]);
+  const [isSearchingNearby, setIsSearchingNearby] = useState(false);
 
   const filteredLocations = locations.filter(loc => {
     const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -24,14 +28,70 @@ export default function Home() {
     return matchesSearch && matchesType;
   });
 
+  const handleSearchNearby = async (lat: number, lng: number) => {
+    setIsSearchingNearby(true);
+    try {
+      const results = await locationService.searchNearbyStorages(lat, lng);
+      setSuggestions(results);
+      if (results.length === 0) {
+        alert('No se encontraron storages en un radio de 5 millas.');
+      }
+    } catch (error) {
+      console.error('Error searching nearby:', error);
+      alert('Error al buscar storages cercanos.');
+    } finally {
+      setIsSearchingNearby(false);
+    }
+  };
+
+  const handleAddStorageFromSuggestion = async (suggestion: Partial<Location>) => {
+    try {
+      await locationService.createLocation({
+        name: suggestion.name || 'Nuevo Storage',
+        address: suggestion.address || '',
+        type: 'storage',
+        status: 'nuevo',
+        lat: suggestion.lat!,
+        lng: suggestion.lng!,
+        description: 'Agregado desde sugerencias cercanas'
+      });
+      
+      // Remove from suggestions and refresh list
+      setSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
+      refresh();
+    } catch (error) {
+      console.error('Error adding suggestion:', error);
+      alert('Error al agregar el storage.');
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       {/* Add Location Modal */}
       <AddLocationModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onSuccess={() => refresh()} 
+        onSuccess={() => {
+          refresh();
+        }}
+        onProjectCreated={(lat, lng) => {
+          setSelectedLocationId(null); // Clear selection to avoid conflicts
+          handleSearchNearby(lat, lng);
+        }}
       />
+
+      {suggestions.length > 0 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] animate-in slide-in-from-bottom-4 duration-500">
+          <button 
+            onClick={() => setSuggestions([])}
+            className="px-6 py-3 bg-violet-600 text-white rounded-full font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 border-2 border-white/20 hover:bg-violet-700 transition-all active:scale-95"
+          >
+            <MapPin size={14} className="animate-pulse" />
+            <span>Limpiar Sugerencias ({suggestions.length})</span>
+            <X size={14} className="opacity-60" />
+          </button>
+        </div>
+      )}
 
       {/* Header - Compact on mobile */}
       <header className="px-5 py-4 md:px-8 md:py-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 z-[1000] backdrop-blur-md bg-white/90 dark:bg-slate-900/90">
@@ -307,8 +367,12 @@ export default function Home() {
           ) : (
             <MapLoader 
               locations={filteredLocations} 
+              suggestions={suggestions}
               onDeleteSuccess={() => refresh()} 
               selectedLocationId={selectedLocationId}
+              onSearchNearby={handleSearchNearby}
+              isSearchingNearby={isSearchingNearby}
+              onAddSuggestion={handleAddStorageFromSuggestion}
             />
           )}
         </section>
