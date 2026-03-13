@@ -1,65 +1,158 @@
-import Image from "next/image";
+'use client';
+
+import { useLocations } from '@/hooks/useLocations';
+import MapLoader from '@/components/map/MapLoader';
+import { LayoutGrid, Map as MapIcon, RefreshCw, Plus } from 'lucide-react';
+import { useState } from 'react';
+import AddLocationModal from '@/components/ui/AddLocationModal';
 
 export default function Home() {
+  const { locations, loading, error, refresh } = useLocations();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
+      {/* Add Location Modal */}
+      <AddLocationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => refresh()} 
+      />
+
+      <header className="px-4 py-4 md:px-8 md:py-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 z-[1000]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+              <MapIcon className="text-blue-600 shrink-0" size={24} />
+              <span className="truncate">Logística Mudanzas</span>
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => refresh()}
+              disabled={loading}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium hover:bg-slate-100 transition-colors disabled:opacity-50"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+            
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <Plus size={14} />
+              Nuevo
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      <div className="flex-1 flex flex-col md:grid md:grid-cols-4 gap-0 md:gap-6 md:p-8 max-w-7xl mx-auto w-full">
+        {/* Mobile Stats Summary - Only 1 line on mobile */}
+        <div className="md:hidden flex overflow-x-auto gap-3 px-4 py-4 bg-slate-50/50 no-scrollbar">
+          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-w-[140px] flex-1">
+            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg">
+              <LayoutGrid size={16} />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Proyectos</div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">
+                {locations.filter(l => l.type === 'project').length}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-w-[140px] flex-1">
+            <div className="p-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-lg">
+              <LayoutGrid size={16} />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Storages</div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">
+                {locations.filter(l => l.type === 'storage').length}
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+
+        {/* Sidebar - Desktop Only or Stacked below map on Mobile */}
+        <aside className="hidden md:flex flex-col gap-6 md:col-span-1">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Resumen General</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-800/20">
+                <div className="text-blue-700 dark:text-blue-400 text-sm font-semibold">Proyectos</div>
+                <div className="text-2xl font-black text-blue-900 dark:text-blue-100">
+                  {locations.filter(l => l.type === 'project').length}
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100 dark:border-orange-800/20">
+                <div className="text-orange-700 dark:text-orange-400 text-sm font-semibold">Storages</div>
+                <div className="text-2xl font-black text-orange-900 dark:text-orange-100">
+                  {locations.filter(l => l.type === 'storage').length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex-1">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Ubicaciones</h2>
+            <div className="space-y-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+              {loading ? (
+                Array(4).fill(0).map((_, i) => (
+                  <div key={i} className="animate-pulse flex gap-3">
+                    <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-3/4"></div>
+                      <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                locations.map(location => (
+                  <div key={location.id} className="flex gap-3 items-center p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
+                    <div className={`p-2 rounded-lg shrink-0 ${
+                      location.type === 'project' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600'
+                    }`}>
+                      <LayoutGrid size={16} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 transition-colors">
+                        {location.name}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 truncate">{location.address}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </aside>
+
+        {/* Map Area - Main focus on mobile */}
+        <section className="md:col-span-3 h-[calc(100vh-200px)] md:h-full bg-white dark:bg-slate-900 md:rounded-2xl border-t md:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          {error ? (
+            <div className="flex-1 flex items-center justify-center p-8 text-center">
+              <div className="max-w-md">
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-full inline-block mb-4 text-red-600">
+                  <LayoutGrid size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Error al cargar datos</h3>
+                <p className="text-slate-500 mb-6">No pudimos conectar con Supabase. Verifica tus variables de entorno.</p>
+                <button 
+                  onClick={() => refresh()}
+                  className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-lg font-medium"
+                >
+                  Reintentar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <MapLoader locations={locations} onDeleteSuccess={() => refresh()} />
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
