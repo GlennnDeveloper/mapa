@@ -1,29 +1,21 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { Location } from '../types/location';
 import { locationService } from '../services/locationService';
 
 export function useLocations() {
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchLocations = async () => {
-    try {
-      setLoading(true);
-      const data = await locationService.getAllLocations();
-      setLocations(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch locations'));
-    } finally {
-      setLoading(false);
+  const { data, error, isLoading, mutate } = useSWR<Location[]>(
+    'locations',
+    () => locationService.getAllLocations(),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000, // Dedup requests within 5s
     }
+  );
+
+  return { 
+    locations: data || [], 
+    loading: isLoading, 
+    error: error instanceof Error ? error : error ? new Error('Failed to fetch locations') : null, 
+    refresh: () => mutate() 
   };
-
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  return { locations, loading, error, refresh: fetchLocations };
 }

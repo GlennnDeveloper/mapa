@@ -1,6 +1,6 @@
 'use client';
 
-import { MapContainer, TileLayer, LayersControl, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, LayersControl, ZoomControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Location } from '@/types/location';
 import MapMarkers from './MapMarkers';
@@ -8,12 +8,13 @@ import MapMarkers from './MapMarkers';
 interface MapComponentProps {
   locations: Location[];
   onDeleteSuccess?: () => void;
+  selectedLocationId?: string | null;
 }
 
-const GEORGIA_CENTER: [number, number] = [32.1656, -82.9001];
-const INITIAL_ZOOM = 7;
+const GEORGIA_CENTER: [number, number] = [33.98, -84.1];
+const INITIAL_ZOOM = 9;
 
-export default function MapComponent({ locations, onDeleteSuccess }: MapComponentProps) {
+export default function MapComponent({ locations, onDeleteSuccess, selectedLocationId }: MapComponentProps) {
   return (
     <div className="h-full w-full rounded-xl overflow-hidden shadow-2xl border border-white/10">
       <MapContainer
@@ -33,19 +34,25 @@ export default function MapComponent({ locations, onDeleteSuccess }: MapComponen
 
         <LayersControl position="topright">
           <LayersControl.Overlay checked name="Proyectos Activos">
-            <MapMarkers 
-              locations={locations.filter(loc => loc.type === 'project')} 
-              type="project" 
-              onDeleteSuccess={onDeleteSuccess}
-            />
+            <LayerGroup>
+              <MapMarkers 
+                locations={locations.filter(loc => loc.type === 'project')} 
+                type="project" 
+                onDeleteSuccess={onDeleteSuccess}
+                selectedLocationId={selectedLocationId}
+              />
+            </LayerGroup>
           </LayersControl.Overlay>
           
           <LayersControl.Overlay checked name="Storages">
-            <MapMarkers 
-              locations={locations.filter(loc => loc.type === 'storage')} 
-              type="storage" 
-              onDeleteSuccess={onDeleteSuccess}
-            />
+            <LayerGroup>
+              <MapMarkers 
+                locations={locations.filter(loc => loc.type === 'storage')} 
+                type="storage" 
+                onDeleteSuccess={onDeleteSuccess}
+                selectedLocationId={selectedLocationId}
+              />
+            </LayerGroup>
           </LayersControl.Overlay>
         </LayersControl>
       </MapContainer>

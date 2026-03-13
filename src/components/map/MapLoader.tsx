@@ -20,8 +20,16 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
 
 interface MapLoaderProps {
   locations: Location[];
+  onDeleteSuccess?: () => void;
+  selectedLocationId?: string | null;
 }
 
-export default function MapLoader({ locations, onDeleteSuccess }: { locations: Location[]; onDeleteSuccess?: () => void }) {
-  return <MapComponent locations={locations} onDeleteSuccess={onDeleteSuccess} />;
+export default function MapLoader({ locations, onDeleteSuccess, selectedLocationId }: MapLoaderProps) {
+  return (
+    <MapComponent 
+      locations={locations} 
+      onDeleteSuccess={onDeleteSuccess} 
+      selectedLocationId={selectedLocationId}
+    />
+  );
 }
