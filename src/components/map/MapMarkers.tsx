@@ -110,9 +110,9 @@ const MemoizedMarker = memo(({
   }, [type, currentStatusStr, location.name]);
 
   const directionsUrl = {
-    google: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location.address)}`,
-    apple: `https://maps.apple.com/?daddr=${encodeURIComponent(location.address)}`,
-    waze: `https://waze.com/ul?q=${encodeURIComponent(location.address)}&navigate=yes`,
+    google: `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`,
+    apple: `https://maps.apple.com/?daddr=${location.lat},${location.lng}`,
+    waze: `https://waze.com/ul?ll=${location.lat},${location.lng}&navigate=yes`,
   };
 
   return (
