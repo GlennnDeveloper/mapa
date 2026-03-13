@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, LayersControl, ZoomControl, LayerGroup } from 
 import 'leaflet/dist/leaflet.css';
 import { Location } from '@/types/location';
 import MapMarkers from './MapMarkers';
+import MapGPSButton from './MapGPSButton';
 
 interface MapComponentProps {
   locations: Location[];
@@ -31,6 +32,7 @@ export default function MapComponent({ locations, onDeleteSuccess, selectedLocat
         />
         
         <ZoomControl position="bottomright" />
+        <MapGPSButton />
 
         <LayersControl position="topright">
           <LayersControl.Overlay checked name="Proyectos Activos">
