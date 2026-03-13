@@ -67,11 +67,11 @@ export default function MapGPSButton() {
       )}
       
       <div className="leaflet-top leaflet-left mt-20 ml-3">
-        <div className="leaflet-control leaflet-bar border-none shadow-none">
+        <div className="leaflet-control leaflet-bar border-none shadow-none bg-transparent">
           <button
             onClick={handleLocate}
             disabled={loading}
-            className="w-12 h-12 bg-white dark:bg-slate-900 rounded-2xl shadow-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-slate-200 dark:border-slate-800 active:scale-95 disabled:opacity-50 group pointer-events-auto"
+            className="w-12 h-12 bg-card rounded-2xl shadow-xl flex items-center justify-center text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-border active:scale-95 disabled:opacity-50 group pointer-events-auto"
             title="Mi ubicación"
           >
             {loading ? (

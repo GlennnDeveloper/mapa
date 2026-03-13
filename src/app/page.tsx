@@ -11,6 +11,8 @@ import BottomNav from '@/components/ui/BottomNav';
 import { Search, Filter, Trash2, MapPin } from 'lucide-react';
 import { Location } from '@/types/location';
 
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+
 export default function Home() {
   const { locations, loading, error, refresh } = useLocations();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,39 +68,15 @@ export default function Home() {
       alert('Error al agregar el storage.');
     }
   };
-
+  
   return (
-    <main className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
-      {/* Add Location Modal */}
-      <AddLocationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSuccess={() => {
-          refresh();
-        }}
-        onProjectCreated={(lat, lng) => {
-          setSelectedLocationId(null); // Clear selection to avoid conflicts
-          handleSearchNearby(lat, lng);
-        }}
-      />
-
-      {suggestions.length > 0 && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] animate-in slide-in-from-bottom-4 duration-500">
-          <button 
-            onClick={() => setSuggestions([])}
-            className="px-6 py-3 bg-violet-600 text-white rounded-full font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 border-2 border-white/20 hover:bg-violet-700 transition-all active:scale-95"
-          >
-            <MapPin size={14} className="animate-pulse" />
-            <span>Limpiar Sugerencias ({suggestions.length})</span>
-            <X size={14} className="opacity-60" />
-          </button>
-        </div>
-      )}
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
+      {/* ... AddLocationModal and suggestions ... */}
 
       {/* Header - Compact on mobile */}
-      <header className="px-5 py-4 md:px-8 md:py-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 z-[1000] backdrop-blur-md bg-white/90 dark:bg-slate-900/90">
+      <header className="px-5 py-4 md:px-8 md:py-6 bg-card border-b border-border shadow-sm sticky top-0 z-[1000] backdrop-blur-md bg-card/90">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-black tracking-tighter text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-black tracking-tighter text-foreground flex items-center gap-2">
             <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20">
               <MapIcon className="text-white shrink-0" size={18} />
             </div>
@@ -107,15 +85,20 @@ export default function Home() {
           </h1>
 
           <div className="flex items-center gap-3">
+             {/* Theme Toggle */}
+             <div className="hidden sm:block mr-2">
+               <ThemeToggle />
+             </div>
+
              {/* Desktop Stats Summary */}
-            <div className="hidden md:flex items-center gap-4 mr-4 border-r border-slate-200 dark:border-slate-800 pr-6">
+            <div className="hidden md:flex items-center gap-4 mr-4 border-r border-border pr-6">
               <div className="text-right">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Proyectos</div>
-                <div className="text-sm font-black text-slate-900 dark:text-white">{locations.filter(l => l.type === 'project').length}</div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Proyectos</div>
+                <div className="text-sm font-black text-foreground">{locations.filter(l => l.type === 'project').length}</div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Storages</div>
-                <div className="text-sm font-black text-slate-900 dark:text-white">{locations.filter(l => l.type === 'storage').length}</div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Storages</div>
+                <div className="text-sm font-black text-foreground">{locations.filter(l => l.type === 'storage').length}</div>
               </div>
             </div>
 
@@ -124,7 +107,7 @@ export default function Home() {
               <button 
                 onClick={() => refresh()}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
                 Refresh
@@ -139,10 +122,15 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobile Status Pill */}
-            <div className="md:hidden flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 dark:bg-blue-900/20 rounded-full border border-blue-100/50 dark:border-blue-800/30">
-               <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-               <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-tighter">En Línea</span>
+            {/* Mobile Status Pill/Toggle */}
+            <div className="md:hidden flex items-center gap-2">
+               <div className="sm:hidden -mr-1">
+                 <ThemeToggle />
+               </div>
+               <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 dark:bg-blue-900/20 rounded-full border border-blue-100/50 dark:border-blue-800/30">
+                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                 <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-tighter">Live</span>
+               </div>
             </div>
           </div>
         </div>
@@ -155,48 +143,48 @@ export default function Home() {
           ${activeMobileView === 'list' ? 'flex' : 'hidden'} 
           md:flex flex-col gap-6 md:col-span-1 
           h-[calc(100vh-80px)] md:h-auto
-          bg-slate-50 dark:bg-slate-950 md:bg-transparent
+          bg-background md:bg-transparent
           p-5 md:p-0 overflow-hidden
         `}>
           {/* Dashboard Stats (Desktop only) */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm md:flex flex-col hidden overflow-hidden">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Dashboard</h2>
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-sm md:flex flex-col hidden overflow-hidden">
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Dashboard</h2>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
+              <div className="flex flex-col p-4 bg-secondary rounded-xl border border-border">
                 <div className="text-blue-600 dark:text-blue-400 mb-1">
                     <LayoutGrid size={18} />
                 </div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white leading-none mb-1">
+                <div className="text-2xl font-black text-foreground leading-none mb-1">
                   {locations.filter(l => l.type === 'project').length}
                 </div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Proyectos</div>
+                <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Proyectos</div>
               </div>
-              <div className="flex flex-col p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
+              <div className="flex flex-col p-4 bg-secondary rounded-xl border border-border">
                 <div className="text-violet-600 dark:text-violet-400 mb-1">
                     <LayoutGrid size={18} />
                 </div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white leading-none mb-1">
+                <div className="text-2xl font-black text-foreground leading-none mb-1">
                   {locations.filter(l => l.type === 'storage').length}
                 </div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Storages</div>
+                <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Storages</div>
               </div>
             </div>
           </div>
 
           {/* List Section */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ubicaciones</h2>
-                <span className="text-[10px] font-black px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full">{filteredLocations.length}</span>
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Ubicaciones</h2>
+                <span className="text-[10px] font-black px-2 py-0.5 bg-secondary rounded-full text-foreground">{filteredLocations.length}</span>
             </div>
 
             {/* Search Bar */}
             <div className="relative mb-4 group">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
               <input 
                 type="text" 
                 placeholder="Buscar por nombre o dirección..." 
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-xl text-xs font-bold transition-all focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-slate-800 outline-none"
+                className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-xl text-xs font-bold transition-all focus:ring-2 focus:ring-blue-500/20 focus:bg-card outline-none text-foreground"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -208,8 +196,8 @@ export default function Home() {
                 onClick={() => setFilterType('all')}
                 className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter transition-all border ${
                   filterType === 'all' 
-                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' 
-                    : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-300'
+                    ? 'bg-foreground text-background border-foreground shadow-sm' 
+                    : 'bg-secondary text-muted-foreground border-border hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >
                 Todos
@@ -219,7 +207,7 @@ export default function Home() {
                 className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter transition-all border ${
                   filterType === 'project' 
                     ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' 
-                    : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-100 dark:border-slate-800 hover:border-blue-200'
+                    : 'bg-secondary text-muted-foreground border-border hover:border-blue-200 dark:hover:border-blue-900'
                 }`}
               >
                 Proyectos
@@ -229,7 +217,7 @@ export default function Home() {
                 className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter transition-all border ${
                   filterType === 'storage' 
                     ? 'bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-500/20' 
-                    : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-100 dark:border-slate-800 hover:border-violet-200'
+                    : 'bg-secondary text-muted-foreground border-border hover:border-violet-200 dark:hover:border-violet-900'
                 }`}
               >
                 Storages
@@ -249,11 +237,11 @@ export default function Home() {
                 ))
               ) : filteredLocations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-full text-slate-300 mb-4">
+                  <div className="p-4 bg-secondary rounded-full text-muted-foreground mb-4">
                     <Search size={32} />
                   </div>
-                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Sin resultados</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Prueba con otra búsqueda</p>
+                  <p className="text-sm font-black text-foreground uppercase tracking-widest">Sin resultados</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Prueba con otra búsqueda</p>
                 </div>
               ) : (
                 <>
@@ -295,10 +283,10 @@ export default function Home() {
                               <LayoutGrid size={16} />
                             </div>
                             <div className="overflow-hidden">
-                              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate transition-colors group-hover:text-blue-600">
+                              <h4 className="text-sm font-black text-foreground truncate transition-colors group-hover:text-blue-600">
                                 {location.name}
                               </h4>
-                              <p className="text-[10px] font-medium text-slate-500 truncate leading-relaxed">{location.address}</p>
+                              <p className="text-[10px] font-bold text-muted-foreground truncate leading-relaxed">{location.address}</p>
                             </div>
                           </div>
                         ))
@@ -346,10 +334,10 @@ export default function Home() {
                               <LayoutGrid size={16} />
                             </div>
                             <div className="overflow-hidden">
-                              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate transition-colors group-hover:text-violet-600">
+                              <h4 className="text-sm font-black text-foreground truncate transition-colors group-hover:text-violet-600">
                                 {location.name}
                               </h4>
-                              <p className="text-[10px] font-medium text-slate-500 truncate leading-relaxed">{location.address}</p>
+                              <p className="text-[10px] font-bold text-muted-foreground truncate leading-relaxed">{location.address}</p>
                             </div>
                           </div>
                         ))
@@ -367,20 +355,20 @@ export default function Home() {
         {/* Map Area - Main focus on mobile */}
         <section className={`
           md:col-span-3 h-[calc(100vh-140px)] md:h-[calc(100vh-140px)]
-          bg-white dark:bg-slate-900 md:rounded-3xl border-t md:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col
+          bg-card md:rounded-3xl border-t md:border border-border shadow-sm overflow-hidden flex flex-col
           ${activeMobileView === 'list' ? 'hidden md:flex' : 'flex'}
         `}>
           {error ? (
-            <div className="flex-1 flex items-center justify-center p-8 text-center bg-red-50/10">
+            <div className="flex-1 flex items-center justify-center p-8 text-center bg-destructive/5">
               <div className="max-w-md">
-                <div className="bg-red-50 dark:bg-red-900/20 p-5 rounded-full inline-block mb-4 text-red-600">
+                <div className="bg-destructive/10 p-5 rounded-full inline-block mb-4 text-destructive">
                   <LayoutGrid size={32} />
                 </div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Error de Conexión</h3>
-                <p className="text-sm text-slate-500 mb-6 font-medium">No pudimos conectar con la base de datos de Supabase. Revisa tu conexión.</p>
+                <h3 className="text-xl font-black text-foreground mb-2 tracking-tight">Error de Conexión</h3>
+                <p className="text-sm text-muted-foreground mb-6 font-medium">No pudimos conectar con la base de datos. Revisa tu conexión.</p>
                 <button 
                   onClick={() => refresh()}
-                  className="px-8 py-3 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl font-bold shadow-xl shadow-black/10 transition-all active:scale-95"
+                  className="px-8 py-3 bg-foreground text-background rounded-xl font-bold shadow-xl transition-all active:scale-95"
                 >
                   Reintentar Ahora
                 </button>

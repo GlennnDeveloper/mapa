@@ -2,32 +2,81 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #f8fafc;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Leaflet Customizations */
 .leaflet-container {
-  background: #f8fafc !important;
+  background: var(--background) !important;
   cursor: crosshair;
 }
 
@@ -38,11 +87,13 @@ body {
 
 /* Mobile Friendly Popups */
 .custom-popup .leaflet-popup-content-wrapper {
-  border-radius: 16px;
+  background: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-radius: 20px;
   padding: 0;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  border: 1px border rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  border: 1px solid var(--border);
 }
 
 .custom-popup .leaflet-popup-content {
@@ -56,10 +107,38 @@ body {
   }
   
   .leaflet-touch .leaflet-control-layers, 
-  .leaflet-touch .leaflet-bar {
-    border: none !important;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+  .leaflet-touch .leaflet-bar,
+  .leaflet-control-layers,
+  .leaflet-bar {
+    border: 1px solid var(--border) !important;
+    background: var(--card) !important;
+    color: var(--card-foreground) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   }
+  
+  .leaflet-touch .leaflet-bar a,
+  .leaflet-bar a {
+    background: var(--card) !important;
+    color: var(--card-foreground) !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .leaflet-bar a:hover {
+    background: var(--secondary) !important;
+  }
+}
+
+/* Global Leaflet Control Theming */
+.leaflet-control-layers,
+.leaflet-bar,
+.leaflet-bar a {
+  background: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+.leaflet-bar a:hover {
+  background: var(--secondary) !important;
 }
 
 .custom-popup .leaflet-popup-tip-container {
@@ -70,9 +149,9 @@ body {
   margin-bottom: 0 !important;
 }
 
-/* Scrollbar styling for touch/modern browsers */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -80,32 +159,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--muted);
   border-radius: 10px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(var(--background), 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
 }
 
 /* Marker Labels */
@@ -120,16 +186,16 @@ body {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: white;
-  padding: 3px 10px;
-  border-radius: 8px;
-  font-size: 11px;
+  background: var(--marker-color);
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 10px;
   font-weight: 900;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  border: 2px solid var(--marker-color);
-  color: var(--marker-color);
-  margin-bottom: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  border: 1.5px solid white;
+  color: white;
+  margin-bottom: 10px;
   pointer-events: none;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -152,7 +218,7 @@ body {
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 6px solid var(--marker-color);
+  border-top: 6px solid white;
   margin-top: -1px;
 }
 
@@ -176,7 +242,7 @@ body {
   width: 14px;
   height: 14px;
   background: #3b82f6;
-  border: 2.5px solid white;
+  border: 2.5px solid var(--card);
   border-radius: 50%;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   z-index: 10;
